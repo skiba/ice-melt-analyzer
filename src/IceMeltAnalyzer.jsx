@@ -24,7 +24,7 @@ const MELT_FACTORS = {
 };
 
 export default function IceMeltAnalyzer() {
-  const [iceThickness, setIceThickness] = useState(25);
+  const [iceThickness, setIceThickness] = useState(30);
   const [scenario, setScenario] = useState("mid");
 
   const mf = MELT_FACTORS[scenario].factor;
@@ -111,52 +111,52 @@ export default function IceMeltAnalyzer() {
         </div>
       </div>
 
-      {/* Day-by-day table */}
-      <div style={{ overflowX: "auto", marginBottom: 24 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ background: "#1e293b" }}>
-              {["Data", "Pogoda", "Max", "Min", "Śr.", "TDD", "Topn./dzień", "Skumulowane", "Pozostało"].map((h) => (
-                <th key={h} style={{ padding: "8px 6px", textAlign: "center", color: "#94a3b8", fontSize: "11px", borderBottom: "1px solid #334155" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {withCumulative.map((d, i) => {
-              const remaining = parseFloat(d.remaining);
-              const pct = remaining / maxBar;
-              const barColor = pct > 0.6 ? "#38bdf8" : pct > 0.3 ? "#f59e0b" : "#ef4444";
-              const isGone = remaining <= 0;
-              return (
-                <tr key={i} style={{ background: isGone ? "#1a0505" : i % 2 === 0 ? "#0f172a" : "#1e293b" }}>
-                  <td style={{ padding: "8px 6px", fontWeight: 600, whiteSpace: "nowrap" }}>
-                    {d.dow} {d.date}
-                  </td>
-                  <td style={{ textAlign: "center", fontSize: "16px" }}>{d.cond}</td>
-                  <td style={{ textAlign: "center", color: d.max > 0 ? "#f59e0b" : "#38bdf8" }}>{d.max > 0 ? "+" : ""}{d.max}°</td>
-                  <td style={{ textAlign: "center", color: d.min > 0 ? "#f59e0b" : "#38bdf8" }}>{d.min > 0 ? "+" : ""}{d.min}°</td>
-                  <td style={{ textAlign: "center", color: parseFloat(d.avg) > 0 ? "#f59e0b" : "#38bdf8" }}>{d.avg}°</td>
-                  <td style={{ textAlign: "center", color: "#22c55e", fontWeight: parseFloat(d.tdd) > 5 ? 700 : 400 }}>{d.tdd}</td>
-                  <td style={{ textAlign: "center" }}>{d.dailyMelt.toFixed(1)} cm</td>
-                  <td style={{ textAlign: "center", fontWeight: 600 }}>{d.cumMelt} cm</td>
-                  <td style={{ padding: "8px 6px", width: 140 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ flex: 1, height: 14, background: "#334155", borderRadius: 7, overflow: "hidden" }}>
-                        <div style={{
-                          width: `${Math.max(0, pct * 100)}%`, height: "100%", background: barColor,
-                          borderRadius: 7, transition: "width 0.3s"
-                        }} />
-                      </div>
-                      <span style={{ fontSize: "11px", minWidth: 36, textAlign: "right", color: barColor, fontWeight: 700 }}>
-                        {isGone ? "0" : d.remaining}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* Day-by-day cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 24 }}>
+        {withCumulative.map((d, i) => {
+          const remaining = parseFloat(d.remaining);
+          const pct = remaining / maxBar;
+          const barColor = pct > 0.6 ? "#38bdf8" : pct > 0.3 ? "#f59e0b" : "#ef4444";
+          const isGone = remaining <= 0;
+          return (
+            <div key={i} style={{
+              background: isGone ? "#1a0505" : i % 2 === 0 ? "#0f172a" : "#1e293b",
+              borderRadius: 10, padding: "10px 12px",
+              borderLeft: `3px solid ${barColor}`,
+            }}>
+              {/* Row 1: date, weather, temps */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontWeight: 700, fontSize: "14px", minWidth: 70 }}>{d.dow} {d.date}</span>
+                  <span style={{ fontSize: "18px" }}>{d.cond}</span>
+                </div>
+                <div style={{ display: "flex", gap: 10, fontSize: "13px" }}>
+                  <span style={{ color: d.max > 0 ? "#f59e0b" : "#38bdf8" }}>{d.max > 0 ? "+" : ""}{d.max}°</span>
+                  <span style={{ color: d.min > 0 ? "#f59e0b" : "#38bdf8" }}>{d.min > 0 ? "+" : ""}{d.min}°</span>
+                  <span style={{ color: "#94a3b8" }}>śr. <span style={{ color: parseFloat(d.avg) > 0 ? "#f59e0b" : "#38bdf8", fontWeight: 600 }}>{d.avg}°</span></span>
+                </div>
+              </div>
+              {/* Row 2: melt stats */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px", marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <span style={{ color: "#94a3b8" }}>TDD <span style={{ color: "#22c55e", fontWeight: parseFloat(d.tdd) > 5 ? 700 : 400 }}>{d.tdd}</span></span>
+                  <span style={{ color: "#94a3b8" }}>topn. <span style={{ color: "#e2e8f0" }}>{d.dailyMelt.toFixed(1)}</span></span>
+                  <span style={{ color: "#94a3b8" }}>sum. <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{d.cumMelt}</span></span>
+                </div>
+                <span style={{ color: barColor, fontWeight: 700, fontSize: "14px" }}>
+                  {isGone ? "0" : d.remaining} cm
+                </span>
+              </div>
+              {/* Row 3: progress bar */}
+              <div style={{ height: 8, background: "#334155", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{
+                  width: `${Math.max(0, pct * 100)}%`, height: "100%", background: barColor,
+                  borderRadius: 4, transition: "width 0.3s"
+                }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* How it works */}
